@@ -1,5 +1,7 @@
 <script src="javascript/sigma/sigma.min.js"></script>
 <script src="javascript/jquery/jquery-2.2.3.min.js"></script>
+<script src="javascript/sigma/plugins/sigma.renderers.customShapes.min.js"></script>
+<script src="javascript/sigma/plugins/sigma.plugins.dragNodes.min.js"></script>
 
 <div id="container">
     <style>
@@ -47,29 +49,60 @@
                 ];
 
 
-       for (i = 0; i < data.nodes.length; i++){
-           var node = data.nodes[i];
-           node["color"] = colors[Math.floor(Math.random() * colors.length)];
-           node["size"] = Math.random();
-           node["x"] = Math.random();
-           node["y"] = Math.random();
-           g.nodes.push(node);
-       }
-        for (i = 0; i < data.edges.length; i++){
+        for (i = 0; i < data.nodes.length; i++) {
+            var node = data.nodes[i];
+            node["color"] = colors[Math.floor(Math.random() * colors.length)];
+            node["borderColor"] = '#000';
+            node["type"]="equilateral";
+            node["size"] = 200;
+            node["x"] = i%5/5;
+            node["y"] = Math.random();
+            node["label"] = node["name"];
+            switch(node.type) {
+                case "equilateral":
+                    node.equilateral = {
+                        rotate: Math.random()*45, // random rotate up to 45 deg
+                        numPoints: Math.round(5 + Math.random()*3)
+                    };
+                    break;
+                case "star":
+                    node.star = {
+                        innerRatio: 0.4 + Math.random()*0.2,
+                        numPoints: Math.round(4 + Math.random()*3)
+                    };
+                    if(node.image) {
+                        // note clip/scale are ratio values. So we fit them to the inner ratio of the star shape
+                        node.image.clip = node.star.innerRatio *0.95;
+                        node.image.scale = node.star.innerRatio *1.2;
+                    }
+                    break;
+                case "square":
+                case "diamond":
+                    if(node.image) {
+                        // note clip/scale are ratio values. So we fit them to the borders of the square shape
+                        node.image.clip = 0.7;
+                    }
+                    break;
+                case "circle":
+                    break;
+                case "cross":
+                    node.cross = {
+                        lineWeight: Math.round(Math.random() * 5)
+                    };
+                    break;
+            }
+            g.nodes.push(node);
+        }
+        for (i = 0; i < data.edges.length; i++) {
             var edge = data.edges[i];
-            edge["size"] = Math.random();
-            edge["type"] = [
-                'line',
-                'curve',
-                'arrow',
-                'curvedArrow',
-                'dashed',
-                'dotted',
-                'parallel',
-                'tapered'
-            ][Math.round(Math.random() * 8)];
+            edge["size"] = 2;
+            edge["type"] = 'curvedArrow';
+            edge["color"] = '#ccc';
+            edge["hover_color"] = '#000';
             g.edges.push(edge);
         }
+
+        console.log(g);
 
         s = new sigma({
             graph: g,
@@ -82,13 +115,14 @@
             },
             settings: {
                 minNodeSize: 1,
-                maxNodeSize: 10,
-                minEdgeSize: 0.1,
-                maxEdgeSize: 2,
+                maxNodeSize: 20,
+                minEdgeSize: 2,
+                maxEdgeSize: 3,
                 enableEdgeHovering: true,
                 edgeHoverSizeRatio: 2
             }
         });
 
+        var dragListener = sigma.plugins.dragNodes(s, s.renderers[0]);
     });
 </script>
