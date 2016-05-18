@@ -1,4 +1,5 @@
-<script src="./javascript/sigma.min.js"></script>
+<script src="javascript/sigma/sigma.min.js"></script>
+<script src="javascript/jquery/jquery-2.2.3.min.js"></script>
 
 <div id="container">
     <style>
@@ -14,46 +15,50 @@
 </div>
 <script>
     // generate a random graph
-    var i,
-            s,
-            img,
-            N = 10,
-            E = 50,
-            g = {
-                nodes: [],
-                edges: []
-            },
-            urls = [
-                'img/img1.png',
-                'img/img2.png',
-                'img/img3.png',
-                'img/img4.png'
-            ],
-            colors = [
-                '#617db4',
-                '#668f3c',
-                '#c6583e',
-                '#b956af'
-            ];
 
-    // Generate a random graph, going through the different edge shapes
-    for (i = 0; i < N; i++) {
-        g.nodes.push({
-            id: 'n' + i,
-            label: 'Node ' + i,
-            x: Math.random(),
-            y: Math.random(),
-            size: Math.random(),
-            color: colors[Math.floor(Math.random() * colors.length)]
-        });
-    }
+    $.getJSON("data/supply-chain.json", function (data) {
+        console.log(data);
 
-    for (i = 0; i < E; i++) {
-        g.edges.push({
-            id: 'e' + i,
-            source: 'n' + (Math.random() * N | 0),
-            target: 'n' + (Math.random() * N | 0),
-            type: [
+        var i,
+                s,
+                img,
+                N = 10,
+                E = 50,
+                g = {
+                    nodes: [],
+                    edges: []
+                },
+
+                x = {
+                    nodes: [],
+                    edges: []
+                },
+                urls = [
+                    'img/img1.png',
+                    'img/img2.png',
+                    'img/img3.png',
+                    'img/img4.png'
+                ],
+                colors = [
+                    '#617db4',
+                    '#668f3c',
+                    '#c6583e',
+                    '#b956af'
+                ];
+
+
+       for (i = 0; i < data.nodes.length; i++){
+           var node = data.nodes[i];
+           node["color"] = colors[Math.floor(Math.random() * colors.length)];
+           node["size"] = Math.random();
+           node["x"] = Math.random();
+           node["y"] = Math.random();
+           g.nodes.push(node);
+       }
+        for (i = 0; i < data.edges.length; i++){
+            var edge = data.edges[i];
+            edge["size"] = Math.random();
+            edge["type"] = [
                 'line',
                 'curve',
                 'arrow',
@@ -62,27 +67,28 @@
                 'dotted',
                 'parallel',
                 'tapered'
-            ][Math.round(Math.random()*8)],
-            size: Math.random()
-        });
-    }
-
-    s = new sigma({
-        graph: g,
-        renderer: {
-            // IMPORTANT:
-            // This works only with the canvas renderer, so the
-            // renderer type set as "canvas" is necessary here.
-            container: document.getElementById('graph-container'),
-            type: 'canvas'
-        },
-        settings: {
-            minNodeSize: 1,
-            maxNodeSize: 10,
-            minEdgeSize: 0.1,
-            maxEdgeSize: 2,
-            enableEdgeHovering: true,
-            edgeHoverSizeRatio: 2
+            ][Math.round(Math.random() * 8)];
+            g.edges.push(edge);
         }
+
+        s = new sigma({
+            graph: g,
+            renderer: {
+                // IMPORTANT:
+                // This works only with the canvas renderer, so the
+                // renderer type set as "canvas" is necessary here.
+                container: document.getElementById('graph-container'),
+                type: 'canvas'
+            },
+            settings: {
+                minNodeSize: 1,
+                maxNodeSize: 10,
+                minEdgeSize: 0.1,
+                maxEdgeSize: 2,
+                enableEdgeHovering: true,
+                edgeHoverSizeRatio: 2
+            }
+        });
+
     });
 </script>
