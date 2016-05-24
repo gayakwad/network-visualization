@@ -2,6 +2,7 @@
 <script src="javascript/jquery/jquery-2.2.3.min.js"></script>
 <script src="javascript/sigma/plugins/sigma.renderers.customShapes.min.js"></script>
 <script src="javascript/sigma/plugins/sigma.plugins.dragNodes.min.js"></script>
+<script src="javascript/sigma/sigma.renderers.canvas.js"></script>
 
 <div id="container">
     <style>
@@ -20,6 +21,47 @@
 
     $.getJSON("data/supply-chain.json", function (data) {
         console.log(data);
+
+        //sigma.utils.pkg('sigma.canvas.edges');
+        sigma.canvas.edges.t = function(edge, source, target, context, settings) {
+            var color = edge.color,
+                    prefix = settings('prefix') || '',
+                    edgeColor = settings('edgeColor'),
+                    defaultNodeColor = settings('defaultNodeColor'),
+                    defaultEdgeColor = settings('defaultEdgeColor');
+
+            if (!color)
+                switch (edgeColor) {
+                    case 'source':
+                        color = source.color || defaultNodeColor;
+                        break;
+                    case 'target':
+                        color = target.color || defaultNodeColor;
+                        break;
+                    default:
+                        color = defaultEdgeColor;
+                        break;
+                }
+
+            context.strokeStyle = color;
+            context.lineWidth = edge[prefix + 'size'] || 1;
+            context.beginPath();
+            context.moveTo(
+                    source[prefix + 'x'],
+                    source[prefix + 'y']
+            );
+            context.lineTo(
+                    source[prefix + 'x'],
+                    target[prefix + 'y']
+            );
+            context.lineTo(
+                    target[prefix + 'x'],
+                    target[prefix + 'y']
+            );
+            context.stroke();
+        };
+
+        console.log(sigma.canvas.edges.t);
 
         var i,
                 s,
@@ -96,7 +138,7 @@
         for (i = 0; i < data.edges.length; i++) {
             var edge = data.edges[i];
             edge["size"] = 2;
-            edge["type"] = 'curvedArrow';
+            edge["type"] = 't';
             edge["color"] = '#ccc';
             edge["hover_color"] = '#000';
             g.edges.push(edge);
